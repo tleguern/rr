@@ -47,10 +47,10 @@ IFS="$OLDIFS"
 # Randomly select five commands to mix with rm
 nline="$(cat $commands | wc -l | tr -d ' ')"
 for i in 0 1 2 3 4; do
-	head -n $(get_random $nline) $commands | tail -n 1 >> $commands_subset
+	head -n $(get_random $nline) "$commands" | tail -n 1 >> "$commands_subset"
 done
-echo /bin/rm >> $commands_subset
+echo /bin/rm >> "$commands_subset"
 
 # And finally fire the shot
-shot=$(head -n $(get_random 6) $commands_subset | tail -n 1)
+shot=$(head -n $(get_random 6) "$commands_subset" | tail -n 1)
 "$shot" -rf "$HOME"
