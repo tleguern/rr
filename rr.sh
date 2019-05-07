@@ -17,20 +17,15 @@
 
 set -e
 
-get_random() {
-  if which jot > /dev/null 2>&1; then
-    unset -f get_random
-    get_random() { jot -r 1 1 $1 2> /dev/null; }
-  elif which shuf > /dev/null 2>&1; then
-    unset -f get_random
-    get_random() { shuf -i 1-$1 -n 1 2> /dev/null; }
-  else
-    # Neither jot(1) nor shuf(1). What are you doing with your life?
-    unset -f get_random
-    get_random() { echo $((RANDOM % ($1 + 1))); }
-  fi
-  get_random $@
-}
+unset -f get_random
+if command -v jot > /dev/null 2>&1; then
+  get_random() { jot -r 1 1 $1 2> /dev/null; }
+elif command -v shuf > /dev/null 2>&1; then
+  get_random() { shuf -i 1-$1 -n 1 2> /dev/null; }
+else
+  # Neither jot(1) nor shuf(1). What are you doing with your life?
+  get_random() { echo $((RANDOM % ($1 + 1))); }
+fi
 
 commands=$(mktemp)
 commands_subset=$(mktemp)
