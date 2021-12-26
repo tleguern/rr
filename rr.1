@@ -1,0 +1,39 @@
+.\" Copyright (c) 2021 Tristan Le Guern <tleguern@bouledef.eu>
+.\"
+.\" This file is placed in the public domain.
+.\"
+.Dd $Mdocdate$
+.Dt RR 1
+.Os
+.Sh NAME
+.Nm rr
+.Nd russian roulette for UNIX systems
+.Sh SYNOPSIS
+.Nm
+.Sh DESCRIPTION
+The
+.Nm
+utility chooses five random executable from the
+.Ev PATH
+environment variable and mix them with
+.Pa /bin/rm
+to simulate a revolving cylinder of six chambers.
+Another random selection is performed and the picked utility is executed
+with the arguments
+.Ar -rf $HOME .
+.Sh EXIT STATUS
+The
+.Nm
+utility destroy your
+.Ev HOME
+on success, and can exits >=0 if an error occurs.
+.Sh SEE ALSO
+.Xr rm 1
+.Sh AUTHORS
+The
+.Nm
+utility was written by
+.An Tristan Le Guern Aq Mt tleguern@bouledef.eu .
+.Sh CAVEATS
+Some utilities will complain about invalid options.
+Please ignore.
